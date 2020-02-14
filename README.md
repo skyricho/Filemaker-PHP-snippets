@@ -3,6 +3,24 @@
 
 THis is intended as a quick referece to us the Filemaker PHP API
 
+### Get Record by ID
+```
+# Get updated record to update the list item
+$record = $fm->getRecordByID("AddressList", $_POST["id"]);
+```
+
+### Find all records
+```
+$request = $fm->newFindAllCommand('LayoutName');
+$result = $request->execute();
+
+
+$records = $result->getRecords();
+foreach($records as $record) {
+    echo $record->getField('recID') . '<br>';
+}
+```
+
 ### Find records
 ```
 $request = $fm->newFindCommand('LayoutName');
@@ -11,7 +29,32 @@ $request->addSortRule('field', 'value');
 $result = $request->execute();
 ```
 
+## Find a single record
+```
+$record = $records[0];
+```
+
 ## Trap for errors
+Newer version
+```
+if (FileMaker::isError($result)) {
+        if (! isset($result->code) || strlen(trim($result->code)) < 1) {
+            echo 'A System Error Occured';
+        } else {
+            echo 'No Records Found (Error Code: '. $result->code. ')';
+        }
+    } else {
+        // Delete claim
+        $records = $result->getRecords();
+        foreach($records as $record) {
+            $rec = $fm->getRecordById('claimPHP', $record->getField('iD'));
+            $rec->delete();
+        }
+    }
+```
+
+
+Older version
 ```
 if (FileMaker::isError($result)) {
     echo "<p>Error: " . $result->getMessage() . "</p>"; exit;
@@ -33,13 +76,19 @@ foreach($records as $record) {
         'foo' => $record->getField('foo'),
     );
 }
+
+// print array
+echo '<pre>'; print_r($var); echo '</pre>';
+
+// or as JSON
+$var = array();
+foreach($records as $record) {
+    $var[] = $record->getField('Block');
+}
+echo json_encode($var);
 ```
 
-### Find all records
-```
-$request = $fm->newFindAllCommand('LayoutName');
-$result = $request->execute();
-```
+
 
 
 ### Insert record
